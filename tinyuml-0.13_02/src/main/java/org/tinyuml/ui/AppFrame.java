@@ -80,6 +80,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
   private JTabbedPane tabbedPane;
   private JLabel coordLabel = new JLabel("    ");
   private JLabel memLabel = new JLabel("    ");
+  private ElementCountLabel countLabel = new ElementCountLabel();
   private UmlModel umlModel;
   private DiagramEditor currentEditor;
   private transient Timer timer = new Timer();
@@ -193,6 +194,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
   private void createEditor(StructureDiagram diagram) {
     currentEditor = new DiagramEditor(this, diagram);
     currentEditor.addEditorStateListener(this);
+    countLabel.refresh(diagram);
     currentEditor.addSelectionListener(this);
     currentEditor.addAppCommandListener(editorDispatcher);
     currentEditor.addAppCommandListener(this);
@@ -242,6 +244,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
     JPanel statusbar = new JPanel(new BorderLayout());
     statusbar.add(coordLabel, BorderLayout.WEST);
     statusbar.add(memLabel, BorderLayout.EAST);
+    statusbar.add(countLabel, BorderLayout.CENTER);
     getContentPane().add(statusbar, BorderLayout.SOUTH);
   }
 
@@ -281,6 +284,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    * {@inheritDoc}
    */
   public void elementAdded(DiagramEditor editor) {
+    countLabel.refresh(editor.getDiagram());
     // spring loading is implemented here
     staticToolbarManager.doClick("SELECT_MODE");
     updateMenuAndToolbars(editor);
@@ -290,6 +294,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    * {@inheritDoc}
    */
   public void elementRemoved(DiagramEditor editor) {
+    countLabel.refresh(editor.getDiagram());
     updateMenuAndToolbars(editor);
   }
 
