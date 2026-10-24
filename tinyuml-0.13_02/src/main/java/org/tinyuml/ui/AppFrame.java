@@ -82,6 +82,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
   private JLabel memLabel = new JLabel("    ");
   private ElementCountLabel countLabel = new ElementCountLabel();
   private SelectedElementLabel selectedLabel = new SelectedElementLabel();
+  private SelectionCountLabel selectionCountLabel = new SelectionCountLabel();
   private UmlModel umlModel;
   private DiagramEditor currentEditor;
   private transient Timer timer = new Timer();
@@ -197,6 +198,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
     currentEditor.addEditorStateListener(this);
     countLabel.refresh(diagram);
     selectedLabel.refresh(currentEditor.getSelectedElements());
+    selectionCountLabel.refresh(currentEditor.getSelectedElements());
     currentEditor.addSelectionListener(this);
     currentEditor.addAppCommandListener(editorDispatcher);
     currentEditor.addAppCommandListener(this);
@@ -247,8 +249,11 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
     statusbar.add(coordLabel, BorderLayout.WEST);
     statusbar.add(memLabel, BorderLayout.EAST);
     JPanel infoPanel = new JPanel(new BorderLayout(10, 0));
-    infoPanel.add(countLabel, BorderLayout.CENTER);
-    infoPanel.add(selectedLabel, BorderLayout.EAST);
+    infoPanel.add(countLabel, BorderLayout.WEST);
+    JPanel selectionPanel = new JPanel(new BorderLayout(10, 0));
+    selectionPanel.add(selectedLabel, BorderLayout.CENTER);
+    selectionPanel.add(selectionCountLabel, BorderLayout.EAST);
+    infoPanel.add(selectionPanel, BorderLayout.CENTER);
     statusbar.add(infoPanel, BorderLayout.CENTER);
     getContentPane().add(statusbar, BorderLayout.SOUTH);
   }
@@ -283,6 +288,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    */
   public void stateChanged(DiagramEditor editor) {
     selectedLabel.refresh(editor.getSelectedElements());
+    selectionCountLabel.refresh(editor.getSelectedElements());
     updateMenuAndToolbars(editor);
   }
 
@@ -325,6 +331,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    */
   public void selectionStateChanged() {
     selectedLabel.refresh(getCurrentEditor().getSelectedElements());
+    selectionCountLabel.refresh(getCurrentEditor().getSelectedElements());
     boolean hasSelection = getCurrentEditor().getSelectedElements().size() > 0;
    
     menumanager.enableMenuItem("CUT", hasSelection);
