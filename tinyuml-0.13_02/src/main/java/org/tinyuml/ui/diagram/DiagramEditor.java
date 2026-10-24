@@ -58,6 +58,11 @@ import org.tinyuml.draw.Node;
 import org.tinyuml.draw.NodeChangeListener;
 import org.tinyuml.draw.RectilinearConnection;
 import org.tinyuml.draw.Scaling;
+import java.awt.Point;
+import javax.swing.JViewport;
+import java.awt.Insets;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import org.tinyuml.draw.SimpleConnection;
 import org.tinyuml.umldraw.structure.StructureDiagram;
 import org.tinyuml.model.ElementType;
@@ -98,6 +103,7 @@ DiagramEditorNotification, DiagramOperations, NodeChangeListener {
   private static final double MARGIN_LEFT = 25;
   private static final double MARGIN_RIGHT = 30;
   private static final double MARGIN_BOTTOM = 30;
+  private static final double MIN_FIT_SCALE = 0.1;
   private transient DrawingContext drawingContext = new DrawingContextImpl();
   private transient EditorMode editorMode;
   private transient SelectionHandler selectionHandler;
@@ -205,8 +211,8 @@ DiagramEditorNotification, DiagramOperations, NodeChangeListener {
    */
   private void setToDiagramSize() {
     setPreferredSize(new Dimension(
-      (int) (diagram.getSize().getWidth() + MARGIN_RIGHT + MARGIN_LEFT),
-      (int) (diagram.getSize().getHeight() + MARGIN_BOTTOM + MARGIN_TOP)));
+      (int) ((diagram.getSize().getWidth() + MARGIN_RIGHT + MARGIN_LEFT) * scaling.getScaleFactor()),
+      (int) ((diagram.getSize().getHeight() + MARGIN_BOTTOM + MARGIN_TOP) * scaling.getScaleFactor())));
     invalidate();
   }
 
@@ -344,6 +350,10 @@ DiagramEditorNotification, DiagramOperations, NodeChangeListener {
     if (toScreen) {
       // Scaling is only interesting if rendering to screen
       scaleDiagram(g2d);
+      // The clip is given in screen pixels. Once scaled, the diagram is drawn
+      // in its own units, so the bounds must be converted as well.
+      Rectangle scaledBounds = g2d.getClipBounds();
+      if (scaledBounds != null) bounds = scaledBounds;
     } else {
       diagram.setGridVisible(false);
       background = Color.WHITE;
@@ -597,7 +607,63 @@ DiagramEditorNotification, DiagramOperations, NodeChangeListener {
    */
   public void setScaling(Scaling aScaling) {
     scaling = aScaling;
+    setToDiagramSize();
+    revalidate();
     repaint();
+  }
+
+  /**
+   * Returns the zoom factor currently applied to the diagram.
+   * @return the scale factor, 1.0 meaning 100 %
+   */
+  public double getZoomFactor() {
+    return scaling.getScaleFactor();
+  }
+
+  /**
+   * Fits the whole diagram into the visible area (RF-005). Only the zoom
+   * and the visible position change, the elements are not modified. It
+   * never enlarges, because the size of the editor does not follow the
+   * zoom.
+   */
+  public void fitToWindow() {
+    JViewport viewport =
+      (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, this);
+    if (viewport == null) return;
+    Dimension visible = getAvailableArea(viewport);
+    if (visible.width <= 0 || visible.height <= 0) return;
+    Dimension total = getTotalCanvasSize();
+    double factor = Math.min(visible.width / (double) total.width,
+      visible.height / (double) total.height);
+    if (factor >= 1.0) {
+      setScaling(Scaling.SCALING_100);
+    } else {
+      setScaling(Scaling.of(Math.max(factor, MIN_FIT_SCALE)));
+    }
+    viewport.setViewPosition(new Point(0, 0));
+  }
+
+  /**
+   * Returns the area available to the diagram, measured without the scroll
+   * bars. They disappear once the diagram fits, so measuring with them would
+   * give a different result each time the action is used.
+   * @param viewport the viewport that contains this editor
+   * @return the available size in pixels
+   */
+  private Dimension getAvailableArea(JViewport viewport) {
+    if (!(viewport.getParent() instanceof JScrollPane)) {
+      return viewport.getExtentSize();
+    }
+    JScrollPane pane = (JScrollPane) viewport.getParent();
+    Insets insets = pane.getInsets();
+    int width = pane.getWidth() - insets.left - insets.right;
+    int height = pane.getHeight() - insets.top - insets.bottom;
+    if (pane.getViewportBorder() != null) {
+      Insets border = pane.getViewportBorder().getBorderInsets(pane);
+      width -= border.left + border.right;
+      height -= border.top + border.bottom;
+    }
+    return new Dimension(width, height);
   }
 
   /**

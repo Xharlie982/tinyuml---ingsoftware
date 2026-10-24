@@ -47,4 +47,14 @@ public final class Scaling {
    * @return the scaling factor
    */
   public double getScaleFactor() { return scaleFactor; }
+
+  /**
+   * Creates a scaling with an arbitrary factor, used to fit the diagram
+   * to the window.
+   * @param factor the scale factor, greater than zero
+   * @return the new Scaling object
+   */
+  public static Scaling of(double factor) {
+    return new Scaling(factor);
+  }
 }

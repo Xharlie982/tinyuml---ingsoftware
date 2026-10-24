@@ -296,6 +296,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    * {@inheritDoc}
    */
   public void elementAdded(DiagramEditor editor) {
+    menumanager.clearFitToWindow();
     countLabel.refresh(editor.getDiagram());
     // spring loading is implemented here
     staticToolbarManager.doClick("SELECT_MODE");
@@ -306,6 +307,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    * {@inheritDoc}
    */
   public void elementRemoved(DiagramEditor editor) {
+    menumanager.clearFitToWindow();
     countLabel.refresh(editor.getDiagram());
     updateMenuAndToolbars(editor);
   }

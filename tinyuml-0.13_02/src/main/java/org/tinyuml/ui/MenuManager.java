@@ -48,6 +48,7 @@ public class MenuManager implements ActionListener {
   private List<AppCommandListener> listeners =
     new ArrayList<AppCommandListener>();
   private Map<String, JMenuItem> itemMap = new HashMap<String, JMenuItem>();
+  private ButtonGroup zoomGroup = new ButtonGroup();
 
   /**
    * Creates a new instance of MenuManager.
@@ -114,12 +115,13 @@ public class MenuManager implements ActionListener {
     JRadioButtonMenuItem zoom100 = createRadioMenuItem(viewMenu, "zoom_100");
     JRadioButtonMenuItem zoom150 = createRadioMenuItem(viewMenu, "zoom_150");
     viewMenu.add(zoom150);
-    ButtonGroup group = new ButtonGroup();
+    ButtonGroup group = zoomGroup;
     group.add(zoom50);
     group.add(zoom75);
     group.add(zoom100);
     group.add(zoom150);
     zoom100.setSelected(true);
+    group.add(createRadioMenuItem(viewMenu, "fittowindow"));
     viewMenu.addSeparator();
     JMenuItem showGrid = createCheckBoxMenuItem(viewMenu, "showgrid");
     showGrid.setSelected(true);
@@ -235,6 +237,9 @@ public class MenuManager implements ActionListener {
    * {@inheritDoc}
    */
   public void actionPerformed(ActionEvent e) {
+    if (e.getActionCommand().startsWith("ZOOM_")) {
+      resetFitToWindowText();
+    }
     for (AppCommandListener l : listeners) {
       l.handleCommand(e.getActionCommand());
     }
@@ -283,5 +288,34 @@ public class MenuManager implements ActionListener {
    */
   public boolean isSelected(String actionCommand) {
     return itemMap.get(actionCommand).isSelected();
+  }
+
+  /**
+   * Clears the mark of the Fit to window option. It is used when the
+   * diagram changes, because the fitted zoom may no longer show every
+   * element. The fixed zoom options are not affected.
+   */
+  public void clearFitToWindow() {
+    if (itemMap.get("FIT_TO_WINDOW").isSelected()) {
+      zoomGroup.clearSelection();
+      resetFitToWindowText();
+    }
+  }
+
+  /**
+   * Shows the zoom reached by Fit to window next to the option name.
+   * @param factor the scale factor applied by the action
+   */
+  public void setFitToWindowZoom(double factor) {
+    itemMap.get("FIT_TO_WINDOW").setText(getResourceString(
+      "menuitem.fittowindow.name") + " (" + Math.round(factor * 100) + " %)");
+  }
+
+  /**
+   * Shows the plain name of the Fit to window option again.
+   */
+  private void resetFitToWindowText() {
+    itemMap.get("FIT_TO_WINDOW").setText(
+      getResourceString("menuitem.fittowindow.name"));
   }
 }

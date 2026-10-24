@@ -78,6 +78,8 @@ public class EditorCommandDispatcher implements AppCommandListener {
       selectorMap.put("ZOOM_150", new MethodCall(
         DiagramEditor.class.getMethod("setScaling", Scaling.class),
           Scaling.SCALING_150));
+      selectorMap.put("FIT_TO_WINDOW", new MethodCall(
+        getClass().getMethod("fitToWindow")));
       selectorMap.put("BRING_TO_FRONT", new MethodCall(
         DiagramEditor.class.getMethod("bringToFront")));
       selectorMap.put("PUT_TO_BACK", new MethodCall(
@@ -155,6 +157,15 @@ public class EditorCommandDispatcher implements AppCommandListener {
    */
   public void snapToGrid() {
     getCurrentEditor().snapToGrid(getMenuManager().isSelected("SNAP_TO_GRID"));
+  }
+
+  /**
+   * Fits the diagram to the window and shows the resulting zoom next to
+   * the option in the menu.
+   */
+  public void fitToWindow() {
+    getCurrentEditor().fitToWindow();
+    getMenuManager().setFitToWindowZoom(getCurrentEditor().getZoomFactor());
   }
 
   /**
