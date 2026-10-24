@@ -265,6 +265,7 @@ public class SelectionHandler implements EditorMode {
   public void elementRemoved(DiagramElement element) {
     if (currentSelection.getElements().contains(element)) {
       currentSelection = NullSelection.getInstance();
+      notifyListeners();
     }
   }
 

@@ -81,6 +81,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
   private JLabel coordLabel = new JLabel("    ");
   private JLabel memLabel = new JLabel("    ");
   private ElementCountLabel countLabel = new ElementCountLabel();
+  private SelectedElementLabel selectedLabel = new SelectedElementLabel();
   private UmlModel umlModel;
   private DiagramEditor currentEditor;
   private transient Timer timer = new Timer();
@@ -195,6 +196,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
     currentEditor = new DiagramEditor(this, diagram);
     currentEditor.addEditorStateListener(this);
     countLabel.refresh(diagram);
+    selectedLabel.refresh(currentEditor.getSelectedElements());
     currentEditor.addSelectionListener(this);
     currentEditor.addAppCommandListener(editorDispatcher);
     currentEditor.addAppCommandListener(this);
@@ -244,7 +246,10 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
     JPanel statusbar = new JPanel(new BorderLayout());
     statusbar.add(coordLabel, BorderLayout.WEST);
     statusbar.add(memLabel, BorderLayout.EAST);
-    statusbar.add(countLabel, BorderLayout.CENTER);
+    JPanel infoPanel = new JPanel(new BorderLayout(10, 0));
+    infoPanel.add(countLabel, BorderLayout.CENTER);
+    infoPanel.add(selectedLabel, BorderLayout.EAST);
+    statusbar.add(infoPanel, BorderLayout.CENTER);
     getContentPane().add(statusbar, BorderLayout.SOUTH);
   }
 
@@ -277,6 +282,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    * {@inheritDoc}
    */
   public void stateChanged(DiagramEditor editor) {
+    selectedLabel.refresh(editor.getSelectedElements());
     updateMenuAndToolbars(editor);
   }
 
@@ -318,6 +324,7 @@ implements EditorStateListener, AppCommandListener, SelectionListener {
    * {@inheritDoc}
    */
   public void selectionStateChanged() {
+    selectedLabel.refresh(getCurrentEditor().getSelectedElements());
     boolean hasSelection = getCurrentEditor().getSelectedElements().size() > 0;
    
     menumanager.enableMenuItem("CUT", hasSelection);
