@@ -251,6 +251,10 @@ DiagramEditorNotification, DiagramOperations, NodeChangeListener {
    */
   public void deleteSelection() {
     Collection<DiagramElement> elements = getSelectedElements();
+    if (elements.size() > 1
+        && !DeleteConfirmation.confirm(this, elements.size())) {
+      return;
+    }
     execute(new DeleteElementCommand(this, elements));
   }
   /**
